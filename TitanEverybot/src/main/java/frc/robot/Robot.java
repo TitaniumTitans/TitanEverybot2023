@@ -92,7 +92,7 @@ public class Robot extends TimedRobot {
   /**
    * Percent output for intaking
    */
-  static final double INTAKE_OUTPUT_POWER = 0.5;
+  static final double INTAKE_OUTPUT_POWER = 1.0;
 
   /**
    * Percent output for holding
@@ -229,6 +229,7 @@ public class Robot extends TimedRobot {
     }
 
     autonomousStartTime = Timer.getFPGATimestamp();
+    SmartDashboard.putBoolean("Run auto", false);
   }
 
   @Override
@@ -240,36 +241,33 @@ public class Robot extends TimedRobot {
       return;
     }
 
+    SmartDashboard.putBoolean("Run auto", true);
     double timeElapsed = Timer.getFPGATimestamp() - autonomousStartTime;
+    SmartDashboard.putNumber("Time elapsed", timeElapsed);
 
-    if(timeElapsed < 1.0)
-    {
-      drive.arcadeDrive(0.5, 0.0);
-    } else
-    {
-      drive.arcadeDrive(0.0, 0.0);
+    if (timeElapsed < 1.0) {
+      setArmMotor(0.5);
     }
-//    if (timeElapsed < ARM_EXTEND_TIME_S) {
-//      setArmMotor(ARM_OUTPUT_POWER);
-//      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
-//      setDriveMotors(0.0, 0.0);
-//    } else if (timeElapsed < ARM_EXTEND_TIME_S + AUTO_THROW_TIME_S) {
-//      setArmMotor(0.0);
-//      setIntakeMotor(autonomousIntakePower, INTAKE_CURRENT_LIMIT_A);
-//      setDriveMotors(0.0, 0.0);
-//    } else if (timeElapsed < ARM_EXTEND_TIME_S + AUTO_THROW_TIME_S + ARM_EXTEND_TIME_S) {
-//      setArmMotor(-ARM_OUTPUT_POWER);
-//      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
-//      setDriveMotors(0.0, 0.0);
-//    } else if (timeElapsed < ARM_EXTEND_TIME_S + AUTO_THROW_TIME_S + ARM_EXTEND_TIME_S + AUTO_DRIVE_TIME) {
-//      setArmMotor(0.0);
-//      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
-//      setDriveMotors(AUTO_DRIVE_SPEED, 0.0);
-//    } else {
-//      setArmMotor(0.0);
-//      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
-//      setDriveMotors(0.0, 0.0);
+    else if (timeElapsed < 2.0) {
+      setArmMotor(0.0);
+    }
+    else if(timeElapsed < 2.1) {
+      setIntakeMotor(autonomousIntakePower, INTAKE_CURRENT_LIMIT_A);
+    }
+    else if(timeElapsed < 3.0) {
+      setIntakeMotor(0.0, INTAKE_HOLD_CURRENT_LIMIT_A);
+      setArmMotor(-0.3);
+    }
+    else if(timeElapsed < 5.0) {
+      setDriveMotors(-0.5, 0.0);
+    }
+//    else if(timeElapsed < 2.0) {
+//      drive.arcadeDrive(-0.5, 0.0);
 //    }
+//    else if (timeElapsed < 3.0) {
+//      drive.arcadeDrive(0.0, 0.0);
+//    }
+//
   }
 
   /**
@@ -282,10 +280,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    driveLeftMaster.setNeutralMode(NeutralMode.Coast);
-    driveLeftFollower.setNeutralMode(NeutralMode.Coast);
-    driveRightMaster.setNeutralMode(NeutralMode.Coast);
-    driveRightFollower.setNeutralMode(NeutralMode.Coast);
+    driveLeftMaster.setNeutralMode(NeutralMode.Brake);
+    driveLeftFollower.setNeutralMode(NeutralMode.Brake);
+    driveRightMaster.setNeutralMode(NeutralMode.Brake);
+    driveRightFollower.setNeutralMode(NeutralMode.Brake);
 
     lastGamePiece = NOTHING;
   }
