@@ -242,27 +242,34 @@ public class Robot extends TimedRobot {
 
     double timeElapsed = Timer.getFPGATimestamp() - autonomousStartTime;
 
-    if (timeElapsed < ARM_EXTEND_TIME_S) {
-      setArmMotor(ARM_OUTPUT_POWER);
-      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
-      setDriveMotors(0.0, 0.0);
-    } else if (timeElapsed < ARM_EXTEND_TIME_S + AUTO_THROW_TIME_S) {
-      setArmMotor(0.0);
-      setIntakeMotor(autonomousIntakePower, INTAKE_CURRENT_LIMIT_A);
-      setDriveMotors(0.0, 0.0);
-    } else if (timeElapsed < ARM_EXTEND_TIME_S + AUTO_THROW_TIME_S + ARM_EXTEND_TIME_S) {
-      setArmMotor(-ARM_OUTPUT_POWER);
-      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
-      setDriveMotors(0.0, 0.0);
-    } else if (timeElapsed < ARM_EXTEND_TIME_S + AUTO_THROW_TIME_S + ARM_EXTEND_TIME_S + AUTO_DRIVE_TIME) {
-      setArmMotor(0.0);
-      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
-      setDriveMotors(AUTO_DRIVE_SPEED, 0.0);
-    } else {
-      setArmMotor(0.0);
-      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
-      setDriveMotors(0.0, 0.0);
+    if(timeElapsed < 1.0)
+    {
+      drive.arcadeDrive(0.5, 0.0);
+    } else
+    {
+      drive.arcadeDrive(0.0, 0.0);
     }
+//    if (timeElapsed < ARM_EXTEND_TIME_S) {
+//      setArmMotor(ARM_OUTPUT_POWER);
+//      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
+//      setDriveMotors(0.0, 0.0);
+//    } else if (timeElapsed < ARM_EXTEND_TIME_S + AUTO_THROW_TIME_S) {
+//      setArmMotor(0.0);
+//      setIntakeMotor(autonomousIntakePower, INTAKE_CURRENT_LIMIT_A);
+//      setDriveMotors(0.0, 0.0);
+//    } else if (timeElapsed < ARM_EXTEND_TIME_S + AUTO_THROW_TIME_S + ARM_EXTEND_TIME_S) {
+//      setArmMotor(-ARM_OUTPUT_POWER);
+//      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
+//      setDriveMotors(0.0, 0.0);
+//    } else if (timeElapsed < ARM_EXTEND_TIME_S + AUTO_THROW_TIME_S + ARM_EXTEND_TIME_S + AUTO_DRIVE_TIME) {
+//      setArmMotor(0.0);
+//      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
+//      setDriveMotors(AUTO_DRIVE_SPEED, 0.0);
+//    } else {
+//      setArmMotor(0.0);
+//      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
+//      setDriveMotors(0.0, 0.0);
+//    }
   }
 
   /**
