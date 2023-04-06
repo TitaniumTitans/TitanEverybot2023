@@ -57,7 +57,7 @@ public class Robot extends TimedRobot {
 
   /**
    * The starter code uses the most generic joystick class.
-   * 
+   *
    * The reveal video was filmed using a logitech gamepad set to
    * direct input mode (switch set to D on the bottom). You may want
    * to use the XBoxController class with the gamepad set to XInput
@@ -91,7 +91,7 @@ public class Robot extends TimedRobot {
   static final int INTAKE_HOLD_CURRENT_LIMIT_A = 5;
 
   /**
-   * Percent output for intaking
+   * Percent output for in-taking
    */
   static final double INTAKE_OUTPUT_POWER = 1.0;
 
@@ -191,7 +191,7 @@ public class Robot extends TimedRobot {
   /**
    * Set the arm output power. Positive is out, negative is in.
    * 
-   * @param percent
+   * @param percent percent power of the arm pivot
    */
   public void setArmMotor(double percent) {
     arm.set(percent);
@@ -224,7 +224,6 @@ public class Robot extends TimedRobot {
   }
 
   double autonomousStartTime;
-  double autonomousIntakePower;
 
   @Override
   public void autonomousInit() {
