@@ -25,6 +25,7 @@ public class Robot extends TimedRobot {
   private static final String kConeMobilityAuto = "cone and mobility";
   private static final String kConeAuto = "cone";
   private static final String kDelayConeMobilityAuto = "delay cone and mobility";
+  private static final String kMobilityAuto = "mobility";
   private String autoSelected;
   private final SendableChooser<String> chooser = new SendableChooser<>();
 
@@ -140,10 +141,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    chooser.setDefaultOption("do nothing", kNothingAuto);
-    chooser.addOption("cone only", kConeAuto);
-    chooser.addOption("cone and mobility", kConeMobilityAuto);
-    chooser.addOption("delay cone and mobility", kDelayConeMobilityAuto);
+    chooser.setDefaultOption("Do nothing", kNothingAuto);
+    chooser.addOption("Cone only", kConeAuto);
+    chooser.addOption("Cone and mobility", kConeMobilityAuto);
+    chooser.addOption("Delay cone and mobility", kDelayConeMobilityAuto);
+    chooser.addOption("Mobility only", kMobilityAuto);
+
     SmartDashboard.putData("Auto choices", chooser);
 
     /*
@@ -252,6 +255,10 @@ public class Robot extends TimedRobot {
       mobility = true;
     }
 
+    setArmMotor(0.0);
+    setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
+    setDriveMotors(0.0, 0.0);
+
     autonomousStartTime = Timer.getFPGATimestamp();
     SmartDashboard.putBoolean("Run auto", false);
   }
@@ -271,6 +278,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Run auto", true);
     double timeElapsed = Timer.getFPGATimestamp() - autonomousStartTime;
 
+    if (autoSelected != null && autoSelected.equals(kMobilityAuto) && timeElapsed < AT_DRIVE_DUR) {
+      setDriveMotors(AUTO_DRIVE_SPEED, 0.0);
+      return;
+    }
     /**
      * Auto actions in following order,
      * - Pause for if delay auto is selected.
