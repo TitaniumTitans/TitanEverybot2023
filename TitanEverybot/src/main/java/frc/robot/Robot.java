@@ -133,9 +133,6 @@ public class Robot extends TimedRobot {
   static final double AT_DRIVE_DUR = 2.0;
   double AT_DRIVE = AT_ARM_IN + AT_DRIVE_DUR;
 
-  double lAntiSpeed;
-  double rAntiSpeed;
-
   /**
    * This method is run once when the robot is first started up.
    */
@@ -335,8 +332,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-   lAntiSpeed = -driveLeftMaster.get();
-   rAntiSpeed = -driveRightMaster.get();
     double armPower;
     if (j.getRawButton(4)) {
       // lower the arm
@@ -378,12 +373,8 @@ public class Robot extends TimedRobot {
      * Negative signs here because the values from the analog sticks are backwards
      * from what we want. Forward returns a negative when we want it positive.
      */
-    if (j.getRawAxis(1) == 0 && j.getRawAxis(0) == 0) {
-      driveLeftMaster.set(lAntiSpeed);
-      driveRightMaster.set(rAntiSpeed);
-    } else {
-      setDriveMotors(-j.getRawAxis(1), -j.getRawAxis(0));
-    }
+    setDriveMotors(-j.getRawAxis(1), -j.getRawAxis(0));
+
 
   }
 }
