@@ -322,10 +322,10 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     double armPower;
-    if (j.getRawButton(3)) {
+    if (j.getRawButton(4)) {
       // lower the arm
       armPower = -ARM_OUTPUT_POWER;
-    } else if (j.getRawButton(4)) {
+    } else if (j.getRawButton(3)) {
       // raise the arm
       armPower = ARM_OUTPUT_POWER;
     } else {
@@ -336,12 +336,12 @@ public class Robot extends TimedRobot {
   
     double intakePower;
     int intakeAmps;
-    if (j.getRawButton(5)) {
+    if (j.getRawButton(2)) {
       // cube in or cone out
       intakePower = INTAKE_OUTPUT_POWER;
       intakeAmps = INTAKE_CURRENT_LIMIT_A;
       lastGamePiece = CUBE;
-    } else if (j.getRawButton(6)) {
+    } else if (j.getRawButton(1)) {
       // cone in or cube out
       intakePower = -INTAKE_OUTPUT_POWER;
       intakeAmps = INTAKE_CURRENT_LIMIT_A;
