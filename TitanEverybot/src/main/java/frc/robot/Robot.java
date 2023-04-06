@@ -22,10 +22,11 @@ public class Robot extends TimedRobot {
    * Autonomous selection options.
    */
   private static final String kNothingAuto = "do nothing";
+  private static final String kConeMobilityAuto = "cone and mobility";
   private static final String kConeAuto = "cone";
-  private static final String kCubeAuto = "cube";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private static final String kDelayConeMobilityAuto = "delay cone and mobility";
+  private String autoSelected;
+  private final SendableChooser<String> chooser = new SendableChooser<>();
 
   /*
    * Drive motor controller instances.
@@ -43,11 +44,11 @@ public class Robot extends TimedRobot {
    * Mechanism motor controller instances.
    * 
    * Like the drive motors, set the CAN id's to match your robot or use different
-   * motor controller classses (TalonFX, TalonSRX, Spark, VictorSP) to match your
+   * motor controller classes (TalonFX, TalonSRX, Spark, VictorSP) to match your
    * robot.
    * 
-   * The arm is a NEO on Everybud.
-   * The intake is a NEO 550 on Everybud.
+   * The arm is a NEO on Everybot.
+   * The intake is a NEO 550 on Everybot.
    */
   CANSparkMax arm = new CANSparkMax(5, MotorType.kBrushless);
   CANSparkMax intake = new CANSparkMax(6, MotorType.kBrushless);
@@ -58,7 +59,7 @@ public class Robot extends TimedRobot {
    * The starter code uses the most generic joystick class.
    * 
    * The reveal video was filmed using a logitech gamepad set to
-   * directinput mode (switch set to D on the bottom). You may want
+   * direct input mode (switch set to D on the bottom). You may want
    * to use the XBoxController class with the gamepad set to XInput
    * mode (switch set to X on the bottom) or a different controller
    * that you feel is more comfortable.
@@ -100,34 +101,47 @@ public class Robot extends TimedRobot {
   static final double INTAKE_HOLD_POWER = 0.07;
 
   /**
-   * Time to extend or retract arm in auto
+   * Decides if bot leaves community in auto.
    */
-  static final double ARM_EXTEND_TIME_S = 2.0;
-
+  boolean mobility;
   /**
-   * Time to throw game piece in auto
+   * Auto constants
    */
-  static final double AUTO_THROW_TIME_S = 0.375;
-
+  static final double AUTO_DRIVE_SPEED = 0.75;
+  static final double AUTO_INTAKE_SPEED = 1.0;
+  static final double AUTO_ARM_PIVOT_OUT_SPEED = 0.6;
+  static final double AUTO_ARM_PIVOT_IN_SPEED = -0.3;
   /**
-   * Time to drive back in auto
+   * Auto timing constants
+   * AT means Auto Timing
+   * Variables with 'dur' at the end are the duration of the action,
+   * Vars without 'dur' are the variables used in the timing and should not mbe tampered with unless changing the order of auto actions.
    */
-  static final double AUTO_DRIVE_TIME = 6.0;
-
-  /**
-   * Speed to drive backwards in auto
-   */
-  static final double AUTO_DRIVE_SPEED = -0.25;
+  static final double AT_DELAY = 5.0;
+  double AT_START_TIME = 0.0;
+  // Arm out
+  static final double AT_ARM_OUT_DUR = 1.1;
+  double AT_ARM_OUT = AT_ARM_OUT_DUR;
+  // Output
+  static final double AT_INTAKE_DUR = 0.9;
+  double AT_INTAKE = AT_ARM_OUT + AT_INTAKE_DUR;
+  // Arm in
+  static final double AT_ARM_IN_DUR = 1.0;
+  double AT_ARM_IN = AT_INTAKE + AT_ARM_IN_DUR;
+  // Drive
+  static final double AT_DRIVE_DUR = 2.0;
+  double AT_DRIVE = AT_ARM_IN + AT_DRIVE_DUR;
 
   /**
    * This method is run once when the robot is first started up.
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("do nothing", kNothingAuto);
-    m_chooser.addOption("cone and mobility", kConeAuto);
-    m_chooser.addOption("cube and mobility", kCubeAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
+    chooser.setDefaultOption("do nothing", kNothingAuto);
+    chooser.addOption("cone only", kConeAuto);
+    chooser.addOption("cone and mobility", kConeMobilityAuto);
+    chooser.addOption("delay cone and mobility", kDelayConeMobilityAuto);
+    SmartDashboard.putData("Auto choices", chooser);
 
     /*
      * You will need to change some of these from false to true.
@@ -163,7 +177,7 @@ public class Robot extends TimedRobot {
    * drive motors.
    * 
    * @param forward Desired forward speed. Positive is forward.
-   * @param turn    Desired turning speed. Positive is counter clockwise from
+   * @param turn    Desired turning speed. Positive is counterclockwise from
    *                above.
    */
   public void setDriveMotors(double forward, double turn) {
@@ -219,13 +233,21 @@ public class Robot extends TimedRobot {
     driveRightMaster.setNeutralMode(NeutralMode.Brake);
     driveRightFollower.setNeutralMode(NeutralMode.Brake);
 
-    m_autoSelected = m_chooser.getSelected();
-    System.out.println("Auto selected: " + m_autoSelected);
+    autoSelected = chooser.getSelected();
 
-    if (m_autoSelected == kConeAuto) {
-      autonomousIntakePower = INTAKE_OUTPUT_POWER;
-    } else if (m_autoSelected == kCubeAuto) {
-      autonomousIntakePower = -INTAKE_OUTPUT_POWER;
+    if (autoSelected != null && autoSelected.equals(kConeAuto))
+    {
+      mobility = false;
+    }
+    else if (autoSelected != null && autoSelected.equals(kDelayConeMobilityAuto)) {
+      AT_START_TIME += AT_DELAY;
+      AT_ARM_OUT += AT_DELAY;
+      AT_INTAKE += AT_DELAY;
+      AT_ARM_IN += AT_DELAY;
+      AT_DRIVE += AT_DELAY;
+      mobility = true;
+    } else {
+      mobility = true;
     }
 
     autonomousStartTime = Timer.getFPGATimestamp();
@@ -234,7 +256,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-    if (m_autoSelected == kNothingAuto) {
+    /**
+     * If do nothing auto is selected ignore the rest of auto period.
+     */
+    if (autoSelected != null && autoSelected.equals(kNothingAuto)) {
       setArmMotor(0.0);
       setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
       setDriveMotors(0.0, 0.0);
@@ -243,31 +268,38 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putBoolean("Run auto", true);
     double timeElapsed = Timer.getFPGATimestamp() - autonomousStartTime;
-    SmartDashboard.putNumber("Time elapsed", timeElapsed);
 
-    if (timeElapsed < 1.0) {
-      setArmMotor(0.5);
-    }
-    else if (timeElapsed < 2.0) {
+    /**
+     * Auto actions in following order,
+     * - Pause for if delay auto is selected.
+     * - Score cone on high row.
+     * - Break auto if mobility isn't selected.
+     * - Drive out of community.
+     */
+    if (timeElapsed < AT_START_TIME) {
       setArmMotor(0.0);
+      setIntakeMotor(0.0, INTAKE_CURRENT_LIMIT_A);
+      setDriveMotors(0.0, 0.0);
     }
-    else if(timeElapsed < 2.1) {
-      setIntakeMotor(autonomousIntakePower, INTAKE_CURRENT_LIMIT_A);
+    else if (timeElapsed < AT_ARM_OUT) {
+      setArmMotor(AUTO_ARM_PIVOT_OUT_SPEED);
     }
-    else if(timeElapsed < 3.0) {
+    else if (timeElapsed < AT_INTAKE) {
+      setArmMotor(0.0);
+      setIntakeMotor(AUTO_INTAKE_SPEED, INTAKE_CURRENT_LIMIT_A);
+    }
+    else if(timeElapsed < AT_ARM_IN) {
       setIntakeMotor(0.0, INTAKE_HOLD_CURRENT_LIMIT_A);
-      setArmMotor(-0.3);
+      setArmMotor(AUTO_ARM_PIVOT_IN_SPEED);
     }
-    else if(timeElapsed < 5.0) {
-      setDriveMotors(-0.5, 0.0);
+    else if(timeElapsed < AT_DRIVE && mobility) {
+      setArmMotor(0.0);
+      setDriveMotors(AUTO_DRIVE_SPEED, 0.0);
     }
-//    else if(timeElapsed < 2.0) {
-//      drive.arcadeDrive(-0.5, 0.0);
-//    }
-//    else if (timeElapsed < 3.0) {
-//      drive.arcadeDrive(0.0, 0.0);
-//    }
-//
+    else {
+      setArmMotor(0.0);
+      setDriveMotors(0.0, 0.0);
+    }
   }
 
   /**
