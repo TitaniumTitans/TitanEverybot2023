@@ -84,12 +84,12 @@ public class Robot extends TimedRobot {
   /**
    * How many amps the intake can use while picking up
    */
-  static final int INTAKE_CURRENT_LIMIT_A = 25;
+  static final int INTAKE_CURRENT_LIMIT_A = 40;
 
   /**
    * How many amps the intake can use while holding
    */
-  static final int INTAKE_HOLD_CURRENT_LIMIT_A = 5;
+  static final int INTAKE_HOLD_CURRENT_LIMIT_A = 10;
 
   /**
    * Percent output for in-taking
@@ -99,7 +99,7 @@ public class Robot extends TimedRobot {
   /**
    * Percent output for holding
    */
-  static final double INTAKE_HOLD_POWER = 0.07;
+  static final double INTAKE_HOLD_POWER = 0.1;
 
   /**
    * Decides if bot leaves community in auto.
@@ -110,7 +110,7 @@ public class Robot extends TimedRobot {
    */
   static final double AUTO_DRIVE_SPEED = -0.75;
   static final double AUTO_INTAKE_SPEED = 1.0;
-  static final double AUTO_ARM_PIVOT_OUT_SPEED = 0.6;
+  static final double AUTO_ARM_PIVOT_OUT_SPEED = 0.5;
   static final double AUTO_ARM_PIVOT_IN_SPEED = -0.3;
   /**
    * Auto timing constants
@@ -121,16 +121,16 @@ public class Robot extends TimedRobot {
   static final double AT_DELAY = 5.0;
   double AT_START_TIME = 0.0;
   // Arm out
-  static final double AT_ARM_OUT_DUR = 1.1;
+  static final double AT_ARM_OUT_DUR = 1.3;
   double AT_ARM_OUT = AT_ARM_OUT_DUR;
   // Output
-  static final double AT_INTAKE_DUR = 0.9;
+  static final double AT_INTAKE_DUR = 0.75;
   double AT_INTAKE = AT_ARM_OUT + AT_INTAKE_DUR;
   // Arm in
-  static final double AT_ARM_IN_DUR = 1.0;
+  static final double AT_ARM_IN_DUR = 1.2;
   double AT_ARM_IN = AT_INTAKE + AT_ARM_IN_DUR;
   // Drive
-  static final double AT_DRIVE_DUR = 2.0;
+  static final double AT_DRIVE_DUR = 2.5;
   double AT_DRIVE = AT_ARM_IN + AT_DRIVE_DUR;
 
   /**
@@ -293,6 +293,7 @@ public class Robot extends TimedRobot {
     }
     else if (timeElapsed < AT_ARM_OUT) {
       setArmMotor(AUTO_ARM_PIVOT_OUT_SPEED);
+      setIntakeMotor(-AUTO_INTAKE_SPEED, INTAKE_CURRENT_LIMIT_A);
     }
     else if (timeElapsed < AT_INTAKE) {
       setArmMotor(0.0);
@@ -349,7 +350,7 @@ public class Robot extends TimedRobot {
     int intakeAmps;
     if (j.getRawButton(2)) {
       // cube in or cone out
-      intakePower = INTAKE_OUTPUT_POWER;
+      intakePower = INTAKE_OUTPUT_POWER * 0.75;
       intakeAmps = INTAKE_CURRENT_LIMIT_A;
       lastGamePiece = CUBE;
     } else if (j.getRawButton(1)) {
@@ -358,7 +359,7 @@ public class Robot extends TimedRobot {
       intakeAmps = INTAKE_CURRENT_LIMIT_A;
       lastGamePiece = CONE;
     } else if (lastGamePiece == CUBE) {
-      intakePower = INTAKE_HOLD_POWER;
+      intakePower = INTAKE_HOLD_POWER / 4;
       intakeAmps = INTAKE_HOLD_CURRENT_LIMIT_A;
     } else if (lastGamePiece == CONE) {
       intakePower = -INTAKE_HOLD_POWER;
